@@ -1,0 +1,18 @@
+Source:,F:\Gitprojects\NAVIX_FlightController_2023\FreeFlighter\FreeFlighter.kicad_sch,,,,
+Date:,2023/11/4 12:31,,,,
+Tool:,Eeschema 7.0.5,,,,
+Generator:,C:\Program Files\KiCad\7.0\bin\scripting\plugins/bom_csv_grouped_by_value.py,,,,
+Component Count:,16,,,,
+,,,,,
+Collated Components:,,,,,
+,,,,,
+Item,Qty,Reference(s),Value,LibPart,Footprint
+1,1,C1,TAJB226M010R,Device:C_Polarized,Capacitor_Tantalum_SMD:CP_EIA-3528-15_AVX-H
+2,2,"C2, C3",GCM188L81H104K57,Device:C,Capacitor_SMD:C_0603_1608Metric
+3,1,D1,BAT54CT,Diode:BAT54C,Package_TO_SOT_SMD:SOT-523
+4,6,"ESC1, PWM1, PWM2, PWM3, PWM4, RECIV1",PH-1x40SG,Connector_Generic:Conn_01x03,Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical
+5,1,I1,ESP32-WROOM-32E,RF_Module:ESP32-WROOM-32,RF_Module:ESP32-WROOM-32
+6,1,R1,RG1608N-102-B-T5,Device:R,Resistor_SMD:R_0603_1608Metric
+7,1,Serial_USB1,PH-1x40SG,Connector_Generic:Conn_01x06,Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical
+8,2,"SW1, SW2",SKRPABE010,Switch:SW_DIP_x01,Button_Switch_SMD:SW_Push_1P1T_NO_Vertical_Wuerth_434133025816
+9,1,U2,AZ1117CH-3.3TRG1,Regulator_Linear:LM317_SOT-223,Package_TO_SOT_SMD:SOT-223-3_TabPin2
