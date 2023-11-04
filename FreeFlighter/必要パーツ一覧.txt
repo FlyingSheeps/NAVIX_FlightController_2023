@@ -1,2 +1,0 @@
-Resistor 10kOhm 1608
-Capaciter 0.1uF 1608
