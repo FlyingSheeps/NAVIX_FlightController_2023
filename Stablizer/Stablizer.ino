@@ -1,3 +1,5 @@
+//このプログラムを使用する際には下記のライブラリを使用してください．
+//Arduino基本ライブラリ
 #include <Arduino.h>
 //sbus用ライブラリ(bolderflight/sbus)
 #include <sbus.h> //ver 8.1.4
@@ -8,8 +10,6 @@
 #include <Adafruit_BNO055.h> //ver 1.6.1
 //FS3000用のライブラリ
 #include <SparkFun_FS3000_Arduino_Library.h> //ver1.0.4
-
-//このプログラムを使用する際には上記のライブラリを使用してください．
 
 /*setup*/
 //センサーや制御の変数をまとめたもの
@@ -51,9 +51,9 @@ struct datastr{
   bool control_bool = 0;
 
   //ゲイン
-  float K = 0.0;
-  float Kd = 0.07;
-  float Ki = 0.8;
+  float Kp = 0.0; //比例制御
+  float Kd = 0.07; //微分制御
+  float Ki = 0.8; //積分制御
   //偏差
   float e = 0.0;
   float eint = 0.0;
@@ -103,8 +103,6 @@ void setup() {
   ledcAttachPin(26, 3); //PWM1番chはGPIOI26番に設定
   ledcSetup(4, PWM_FREQ, DUTY_RESOLUTION); //PWM4番chは125Hz=8msを14bitで分割
   ledcAttachPin(27, 4); //PWM1番chはGPIOI27番に設定
-  //EScが暴走しないようにスロットル信号PWMを即時に送る
-  ledcWrite(1, COUNT_LOW + 368 );
 
   //PC等にデータを送信するシリアルチャンネルを設定する
   //baudrateを115200に設定する．boudrateは通信の周波数を決める．値が大きいほど通信が速いが，ノイズに弱くなる．
@@ -171,15 +169,14 @@ void loop() {
     
     //制御の計算を行う
     //取得したエレベータの値(2ch)を目標値に変換する（この場合0-2048を-20deg-20degに変換している）
-    data.pitch_r = map(sbus_data.ch[1]-1024,0,2048,-20,20);
+    data.pitch_r = map(sbus_data.ch[1],0,2048,-20,20);
     data.e = data.pitch_r - data.pitch; //偏差=目標値-今の姿勢を計算
     data.eint = data.e*data.deltaT; //偏差を累積して累積偏差を計算（I制御に使用）
-    data.K = 2.0*(sbus_data.ch[5] - 1024)/2048.0; //制御のゲインを取得．ここでは5ch(VR)の値を-1から1に変換している．
-    data.pitch_u = -data.K*( data.Kd*data.gyroPitch + data.e + data.Ki*data.eint )*2048.0/90.0 + COUNT_LOW; //制御の計算．K(Kd+Kp+Ki)の形で制御している．11bitがサーボの90degに対応するとして計算している．
+    data.pitch_u = -( data.Kd*data.gyroPitch + data.Kp*data.e + data.Ki*data.eint )*2048.0/90.0 + COUNT_LOW; //制御の計算．Kd+Kp+Kiの形で制御している．11bitがサーボの90degに対応するとして計算している．
     data.roll_u = sbus_data.ch[3] + COUNT_LOW; //ロール（ラダー）は制御しないので，sbusの4chそのままの値を取得．
     
     //sorvoにPWMとして送信
-    ledcWrite(2, constrain(data.pitch_u,COUNT_LOW,COUNT_HIGH));
+    ledcWrite(2, constrain(data.pitch_u,COUNT_LOW,COUNT_HIGH)); //constrainで舵角命令を1msから2msの範囲に制限する
     ledcWrite(3, constrain(data.roll_u,COUNT_LOW,COUNT_HIGH));
   }else{
     //制御しない場合は取得したsbusの値をそのまま送る
@@ -197,8 +194,8 @@ void loop() {
   Serial.printf("%lu,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d,%f,%f,%f\n",millis(),data.velo,data.accX,data.accY,data.accZ,data.gyroRoll,data.gyroPitch,data.gyroYaw,data.roll,data.pitch,data.yaw,data.ESC_u,data.pitch_u,data.roll_u,data.K);
 
   //time 
-  if(data.deltaT < 20) { delay(20-data.deltaT); } //だいたい20msで制御が回ってくれるように指定
-  data.deltaT = millis() - prev_time; //今の時間と一周前の時間の差を計算
+  if(millis() - prev_time < 20) { delay(20-(millis() - prev_time)); } //今の時間millis引く前の時間で一回のループにかかる時間を計算し，その時間を使って足りなかった分をdelayで待つことでだいたい20msで制御が回ってくれるように指定
+  data.deltaT = millis() - prev_time; //今の時間と一周前の時間の差を再計算
   prev_time = millis(); //今の時間を保存する
 
   //最後にloop関数の頭まで戻ります．
