@@ -54,8 +54,8 @@ struct datastr{
   float Kd = 0.07; //微分制御
   float Ki = 0.8; //積分制御
   //偏差
-  float e = 0.0;
-  float eint = 0.0;
+  float e = 0.0; //偏差そのまま
+  float eint = 0.0; //偏差の累積
 };
 
 //上記のdatastr型の変数を宣言する
@@ -132,6 +132,7 @@ void setup() {
 void loop() {
 
   //IMUのデータを取得する．IMUのxyz軸が機体のxyz軸に合っているかは設置の仕方次第なので，ここで軸を取り替えるなどする．
+  //IMUはできるだけ飛行機の軸に対して斜めにならないように配置する．斜めになると以下に書いてある座標系変換では対応できない．
   bno.getEvent(&bnodata, Adafruit_BNO055::VECTOR_GYROSCOPE); //角速度の取得
   data.gyroPitch =   bnodata.gyro.x;
   data.gyroRoll  =   bnodata.gyro.y;
@@ -167,7 +168,8 @@ void loop() {
     data.pitch_r = map(sbus_data.ch[1],0,2048,-20,20);
     data.e = data.pitch_r - data.pitch; //偏差=目標値-今の姿勢を計算
     data.eint = data.e*data.deltaT; //偏差を累積して累積偏差を計算（I制御に使用）
-    data.pitch_u = -( data.Kd*data.gyroPitch + data.Kp*data.e + data.Ki*data.eint )*2048.0/90.0 + COUNT_LOW; //制御の計算．Kd+Kp+Kiの形で制御している．11bitがサーボの90degに対応するとして計算している．
+    data.pitch_u = -( data.Kd*data.gyroPitch + data.Kp*data.e + data.Ki*data.eint ); //制御の計算．Kd+Kp+Kiの形で制御している．この行の計算の結果は，サーボの舵角[deg]で帰ってくる
+    data.pitch_u = map(data.pitch_u,-45,45,0,2048); //サーボの舵角-45,45[deg]をカウント0,2048に変換する．
     data.roll_u = sbus_data.ch[3] + COUNT_LOW; //ロール（ラダー）は制御しないので，sbusの4chそのままの値を取得．
     
     //sorvoにPWMとして送信
