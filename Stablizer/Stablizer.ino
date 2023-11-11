@@ -3,7 +3,7 @@
 #include <Arduino.h>
 //sbus用ライブラリ(bolderflight/sbus)
 #include <sbus.h> //ver 8.1.4
-//PWM用ライブラリ
+//ESP32専用PWM用ライブラリ
 #include <esp32-hal-ledc.h>
 //BNO055用のライブラリ
 #include <Adafruit_Sensor.h> //installed with Adafruit_BNO055
@@ -11,7 +11,6 @@
 //FS3000用のライブラリ
 #include <SparkFun_FS3000_Arduino_Library.h> //ver1.0.4
 
-/*setup*/
 //センサーや制御の変数をまとめたもの
 struct datastr{
 
@@ -75,10 +74,6 @@ FS3000 speed;
 bfs::SbusRx sbus_rx(&Serial1,33,14,true);
 // channel, fail safe, and lost frames data
 bfs::SbusData sbus_data;
-
-
-/*-------controlprocess--------*/
-uint16_t plev = 0;
 
 //PWM properties
 //サーボやESCはHIGHの時間が1msから2ms（または0.5ms-2.5ms）のPWMを受け付ける．
