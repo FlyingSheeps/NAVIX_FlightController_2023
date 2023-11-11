@@ -172,7 +172,7 @@ void loop() {
     data.pitch_u = map(data.pitch_u,-45,45,0,2048); //サーボの舵角-45,45[deg]をカウント0,2048に変換する．
     data.roll_u = sbus_data.ch[3] + COUNT_LOW; //ロール（ラダー）は制御しないので，sbusの4chそのままの値を取得．
     
-    //sorvoにPWMとして送信
+    //servoにPWMとして送信
     ledcWrite(2, constrain(data.pitch_u,COUNT_LOW,COUNT_HIGH)); //constrainで舵角命令を1msから2msの範囲に制限する
     ledcWrite(3, constrain(data.roll_u,COUNT_LOW,COUNT_HIGH));
   }else{
